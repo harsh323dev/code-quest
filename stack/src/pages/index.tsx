@@ -94,7 +94,7 @@ export default function Home() {
   if (!question || question.length === 0) {
     return (
       <Mainlayout>
-        <div className="text-center text-gray-500 mt-4">No question found.</div>
+        <div className="text-center text-gray-500 mt-4">No questions found.</div>
       </Mainlayout>
     );
   }

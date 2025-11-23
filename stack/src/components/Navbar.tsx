@@ -33,10 +33,10 @@ const Navbar = ({ handleslidein }: any) => {
           </Link>
 
           <div className="hidden sm:flex gap-1">
-            {["About", "Products", "For Teams"].map((item) => (
+            {["About", "Products", "For Teams", "Public Space"].map((item, idx) => (
               <Link
                 key={item}
-                href="/"
+                href={item === 'Public Space' ? '/publicspace' : '/'}
                 className="text-sm text-[#454545] font-medium px-4 py-2 rounded hover:bg-gray-200 transition"
               >
                 {item}
@@ -84,3 +84,4 @@ const Navbar = ({ handleslidein }: any) => {
 };
 
 export default Navbar;
+def new
