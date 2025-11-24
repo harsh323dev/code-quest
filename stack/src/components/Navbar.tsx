@@ -84,4 +84,3 @@ const Navbar = ({ handleslidein }: any) => {
 };
 
 export default Navbar;
-def new

@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import user from "../models/auth.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+
 export const Signup = async (req, res) => {
   const { name, email, password } = req.body;
   try {
@@ -9,23 +10,31 @@ export const Signup = async (req, res) => {
     if (exisitinguser) {
       return res.status(404).json({ message: "User already exist" });
     }
-    const token = jwt.sign(
-      { email: newuser.email, id: newuser._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    
+    // ✅ FIXED: Hash password first
     const hashpassword = await bcrypt.hash(password, 12);
+    
+    // ✅ FIXED: Create user second
     const newuser = await user.create({
       name,
       email,
       password: hashpassword,
     });
+    
+    // ✅ FIXED: Generate token third (after user exists)
+    const token = jwt.sign(
+      { email: newuser.email, id: newuser._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    
     res.status(200).json({ data: newuser, token });
   } catch (error) {
-    res.status(500).json("something went wrong..");
-    return;
+    console.log(error); // Added error logging
+    res.status(500).json({ message: "something went wrong.." });
   }
 };
+
 export const Login = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -48,19 +57,21 @@ export const Login = async (req, res) => {
     );
     res.status(200).json({ data: exisitinguser, token });
   } catch (error) {
-    res.status(500).json("something went wrong..");
-    return;
+    console.log(error); // Added error logging
+    res.status(500).json({ message: "something went wrong.." });
   }
 };
+
 export const getallusers = async (req, res) => {
   try {
     const alluser = await user.find();
     res.status(200).json({ data: alluser });
   } catch (error) {
-    res.status(500).json("something went wrong..");
-    return;
+    console.log(error); // Added error logging
+    res.status(500).json({ message: "something went wrong.." });
   }
 };
+
 export const updateprofile = async (req, res) => {
   const { id: _id } = req.params;
   const { name, about, tags } = req.body.editForm;
@@ -76,7 +87,6 @@ export const updateprofile = async (req, res) => {
     res.status(200).json({ data: updateprofile });
   } catch (error) {
     console.log(error);
-    res.status(500).json("something went wrong.......!!!!!!!!!!!!!!!!!!!!");
-    return;
+    res.status(500).json({ message: "something went wrong.." });
   }
 };
