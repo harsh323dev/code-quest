@@ -24,7 +24,7 @@ const index = () => {
   const handlesubmit = async (e: any) => {
     e.preventDefault();
     if (!form.email || !form.password) {
-      toast.error("ALL Fields are required");
+      toast.error("ALL Fields are required!!!");
       return;
     }
     try {
