@@ -113,6 +113,7 @@ Before running this project, ensure you have the following installed:
 ### 1️⃣ Clone the Repository
 
 ```bash
+
 git clone [https://github.com/yourusername/codequest.git](https://github.com/yourusername/codequest.git)
 cd codequest
 
@@ -185,7 +186,8 @@ Transfers reward points between users.
 POST /user/otp/generate
 Generates OTP for language switching security.
 
-👨‍💻 Author
+## 👨‍💻 Author
+
 **Harsh Agarwal**
 
 [![GitHub](https://img.shields.io/badge/GitHub-Harsh427744-181717?style=for-the-badge&logo=github)](https://github.com/Harsh427744)
@@ -193,9 +195,10 @@ Generates OTP for language switching security.
 
 ---
 
-
 <div align="center">
   <p>⭐ If you found this project interesting, consider giving it a star!</p>
   <p>Built with ❤️ by Harsh Agarwal</p>
 </div>
+
+
 
