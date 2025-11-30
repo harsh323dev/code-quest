@@ -188,6 +188,14 @@ Generates OTP for language switching security.
 👨‍💻 Author
 **Harsh Agarwal**
 
-<p> <a href="https://github.com/Harsh427744"> <img src="https://www.google.com/search?q=https://img.shields.io/badge/GitHub-Profile-181717%3Fstyle%3Dfor-the-badge%26logo%3Dgithub" alt="GitHub" /> </a> <a href="https://www.google.com/search?q=https://linkedin.com/in/harsh323"> <img src="https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin" alt="LinkedIn" /> </a> </p>
+[![GitHub](https://img.shields.io/badge/GitHub-Harsh427744-181717?style=for-the-badge&logo=github)](https://github.com/Harsh427744)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin)](https://linkedin.com/in/harsh323)
 
-<div align="center"> <p>⭐ If you found this project interesting, consider giving it a star!</p> </div>
+---
+
+
+<div align="center">
+  <p>⭐ If you found this project interesting, consider giving it a star!</p>
+  <p>Built with ❤️ by Harsh Agarwal</p>
+</div>
+
