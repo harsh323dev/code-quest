@@ -1,34 +1,39 @@
 import mongoose from "mongoose";
 
-const userschema = mongoose.Schema({
+const loginHistorySchema = mongoose.Schema({
+  ip: { type: String },
+  browser: { type: String },
+  os: { type: String },
+  deviceType: { type: String }, // "Mobile", "Desktop", "Tablet"
+  loginTime: { type: Date, default: Date.now }
+});
+
+const userSchema = mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true },
   password: { type: String, required: true },
   about: { type: String },
   tags: { type: [String] },
-  joinDate: { type: Date, default: Date.now },
-  friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
-  lastPostDate: { type: Date },
-  postsToday: { type: Number, default: 0 }
+  joinedOn: { type: Date, default: Date.now },
+  
+  // Feature 1: Public Space
+  friends: [{ type: String }],
+  postsToday: { type: Number, default: 0 },
+  lastPostDate: { type: String, default: null },
+
+  // Feature 2: Password Reset
+  lastPasswordResetRequest: { type: Date, default: null },
+
+  // Feature 3: Subscriptions
+  subscriptionPlan: { type: String, enum: ['Free', 'Bronze', 'Silver', 'Gold'], default: 'Free' },
+  questionsPostedToday: { type: Number, default: 0 },
+  lastQuestionDate: { type: String, default: null },
+
+  // Feature 4: Rewards
+  points: { type: Number, default: 0 },
+
+  // Feature 6: Login Tracking
+  loginHistory: [loginHistorySchema]
 });
 
-// Reset posts count at midnight
-userschema.methods.resetDailyPosts = async function() {
-  const today = new Date();
-  const lastPost = this.lastPostDate || new Date(0);
-  
-  if (lastPost.getDate() !== today.getDate()) {
-    this.postsToday = 0;
-    await this.save();
-  }
-};
-
-// Get allowed posts per day based on friend count
-userschema.methods.getAllowedPostsPerDay = function() {
-  const friendCount = this.friends.length;
-  if (friendCount === 0) return 0;
-  if (friendCount >= 10) return Infinity;
-  return friendCount >= 2 ? 2 : 1;
-};
-
-export default mongoose.model("user", userschema);
+export default mongoose.model("User", userSchema);

@@ -1,13 +1,14 @@
 import express from "express";
-import { Askanswer, deleteanswer } from "../controller/answer.js";
-
+// ✅ CHANGED: Imported 'postAnswer' and 'deleteAnswer' (CamelCase) to match the new Controller
+import { postAnswer, deleteAnswer } from "../controller/answer.js"; 
 import auth from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.post("/postanswer/:id",auth, Askanswer);
-router.delete("/delete/:id",auth,deleteanswer)
+// Route to post an answer
+router.patch("/post/:id", auth, postAnswer);
 
+// Route to delete an answer
+router.patch("/delete/:id", auth, deleteAnswer);
 
 export default router;
-

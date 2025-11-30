@@ -1,53 +1,72 @@
 import mongoose from "mongoose";
-import question from "../models/question.js";
+import Questions from "../models/question.js";
+import User from "../models/auth.js"; // Import User model
 
-export const Askanswer = async (req, res) => {
+export const postAnswer = async (req, res) => {
   const { id: _id } = req.params;
+  const { noOfAnswers, answerBody, userAnswered, userId } = req.body;
+
   if (!mongoose.Types.ObjectId.isValid(_id)) {
-    return res.status(400).json({ message: "question unavailable" });
+    return res.status(404).send("question unavailable...");
   }
-  const { noofanswer, answerbody, useranswered, userid } = req.body;
-  updatenoofanswer(_id, noofanswer);
+
+  updateNoOfQuestions(_id, noOfAnswers);
 
   try {
-    const updatequestion = await question.findByIdAndUpdate(_id, {
-      $addToSet: { answer: [{ answerbody, useranswered, userid }] },
+    const updatedQuestion = await Questions.findByIdAndUpdate(_id, {
+      $addToSet: { answer: [{ answerBody, userAnswered, userId }] },
     });
-    res.status(200).json({ data: updatequestion });
+
+    // --- REWARD LOGIC: ADD 5 POINTS ---
+    await User.findByIdAndUpdate(userId, { $inc: { points: 5 } });
+
+    res.status(200).json(updatedQuestion);
   } catch (error) {
-    console.log(error);
-    res.status(500).json("something went wrong..");
-    return;
+    res.status(400).json("error in updating");
   }
 };
-const updatenoofanswer = async (_id, noofanswer) => {
+
+const updateNoOfQuestions = async (_id, noOfAnswers) => {
   try {
-    await question.findByIdAndUpdate(_id, { $set: { noofanswer: noofanswer } });
+    await Questions.findByIdAndUpdate(_id, {
+      $set: { noOfAnswers: noOfAnswers },
+    });
   } catch (error) {
     console.log(error);
   }
 };
-export const deleteanswer = async (req, res) => {
+
+export const deleteAnswer = async (req, res) => {
   const { id: _id } = req.params;
-  const { noofanswer, answerid } = req.body;
+  const { answerId, noOfAnswers } = req.body;
+
   if (!mongoose.Types.ObjectId.isValid(_id)) {
-    return res.status(400).json({ message: "question unavailable" });
+    return res.status(404).send("Question unavailable...");
   }
-  if (!mongoose.Types.ObjectId.isValid(answerid)) {
-    return res.status(400).json({ message: "answer unavailable" });
+  if (!mongoose.Types.ObjectId.isValid(answerId)) {
+    return res.status(404).send("Answer unavailable...");
   }
-  updatenoofanswer(_id, noofanswer);
+
+  updateNoOfQuestions(_id, noOfAnswers);
+
   try {
-    const updatequestion = await question.updateOne(
+    // Find the question to get the userId of the answer author BEFORE deleting
+    const question = await Questions.findById(_id);
+    const answer = question.answer.find(a => a._id.toString() === answerId);
+    
+    // Delete the answer
+    await Questions.updateOne(
       { _id },
-      {
-        $pull: { answer: { _id: answerid } },
-      }
+      { $pull: { answer: { _id: answerId } } }
     );
-    res.status(200).json({ data: updatequestion });
+
+    // --- REWARD LOGIC: DEDUCT 5 POINTS ---
+    if (answer && answer.userId) {
+        await User.findByIdAndUpdate(answer.userId, { $inc: { points: -5 } });
+    }
+
+    res.status(200).json({ message: "Successfully deleted..." });
   } catch (error) {
-    console.log(error);
-    res.status(500).json("something went wrong..");
-    return;
+    res.status(405).json(error);
   }
 };

@@ -1,0 +1,9 @@
+{
+  "welcome": "Bienvenue sur StackOverflow Clone",
+  "search": "Rechercher...",
+  "login": "Se connecter",
+  "logout": "Se déconnecter",
+  "public_space": "Espace Public",
+  "questions": "Questions",
+  "users": "Utilisateurs"
+}

@@ -5,9 +5,10 @@ import mongoose from "mongoose";
 import userroutes from "./routes/auth.js";
 import questionroute from "./routes/question.js";
 import answerroutes from "./routes/answer.js";
-import postRoutes from "./routes/post.js";
+import postRoutes from "./routes/post.js"; 
+import paymentRoutes from "./routes/payment.js"; // ✅ 1. IMPORT PAYMENT ROUTES
 
-dotenv.config(); // ✅ Changed from require('dotenv').config()
+dotenv.config();
 
 const app = express();
 app.use(express.json({ limit: "30mb", extended: true }));
@@ -21,7 +22,14 @@ app.get("/", (req, res) => {
 app.use('/user', userroutes);
 app.use('/question', questionroute);
 app.use('/answer', answerroutes);
-app.use('/post', postRoutes);
+
+// ✅ 2. CHANGE '/post' to '/posts'
+// The frontend code I gave you uses axiosInstance.get('/posts/feed'). 
+// These must match exactly.
+app.use('/posts', postRoutes); 
+
+// ✅ 3. USE PAYMENT ROUTES
+app.use('/payment', paymentRoutes); 
 
 const PORT = process.env.PORT || 5000;
 const databaseurl = process.env.MONGODB_URL;

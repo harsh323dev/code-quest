@@ -1,82 +1,96 @@
+import Questions from "../models/question.js";
 import mongoose from "mongoose";
-import question from "../models/question.js";
+import User from "../models/auth.js"; 
 
+// --- 1. ASK QUESTION ---
+export const AskQuestion = async (req, res) => { 
+  // ^^^ MAKE SURE THIS IS Capital 'Q' ^^^
+  const { postQuestionData } = req.body;
+  const userId = req.userId;
 
-export const Askquestion = async (req, res) => {
-  const { postquestiondata } = req.body;
-  const postques = new question({ ...postquestiondata });
   try {
-    await postques.save();
-    res.status(200).json({ data: postques });
+    const user = await User.findById(userId);
+
+    // A. Daily Counter Reset
+    const todayStr = new Date().toDateString();
+    if (user.lastQuestionDate !== todayStr) {
+      user.questionsPostedToday = 0;
+      user.lastQuestionDate = todayStr;
+      await user.save();
+    }
+
+    // B. Subscription Limits
+    const PLAN_LIMITS = { 'Free': 1, 'Bronze': 5, 'Silver': 10, 'Gold': Infinity };
+    const userPlan = user.subscriptionPlan || 'Free';
+    const limit = PLAN_LIMITS[userPlan];
+
+    if (user.questionsPostedToday >= limit) {
+      return res.status(403).json({ 
+        message: `Daily limit reached! You are on the ${userPlan} plan (Max: ${limit}).` 
+      });
+    }
+
+    // C. Create Question
+    const postQuestion = new Questions({ ...postQuestionData, userId });
+    await postQuestion.save();
+
+    // D. Update Counter
+    user.questionsPostedToday += 1;
+    await user.save();
+
+    res.status(200).json("Posted a question successfully");
   } catch (error) {
     console.log(error);
-    res.status(500).json("something went wrong..");
-    return;
+    res.status(409).json("Couldn't post a new question");
   }
 };
 
-export const getallquestion = async (req, res) => {
+// --- 2. GET ALL QUESTIONS ---
+export const getAllQuestions = async (req, res) => {
   try {
-    const allquestion = await question.find().sort({ askedon: -1 });
-    res.status(200).json({ data: allquestion });
+    const questionList = await Questions.find().sort({ askedOn: -1 });
+    res.status(200).json(questionList);
   } catch (error) {
-    res.status(500).json("something went wrong..");
-    return;
+    res.status(404).json({ message: error.message });
   }
 };
-export const deletequestion = async (req, res) => {
-  const { id: _id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(_id)) {
-    return res.status(400).json({ message: "question unavailable" });
-  }
+// --- 3. DELETE QUESTION ---
+export const deleteQuestion = async (req, res) => {
+  const { id: _id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(_id)) return res.status(404).send("question unavailable...");
+
   try {
-    await question.findByIdAndDelete(_id);
-    res.status(200).json({ message: "question deleted" });
+    await Questions.findByIdAndDelete(_id);
+    res.status(200).json({ message: "successfully deleted..." });
   } catch (error) {
-    res.status(500).json("something went wrong..");
-    return;
+    res.status(404).json({ message: error.message });
   }
 };
-export const votequestion = async (req, res) => {
+
+// --- 4. VOTE QUESTION ---
+export const voteQuestion = async (req, res) => {
   const { id: _id } = req.params;
-  const { value ,userid} = req.body;
-  if (!mongoose.Types.ObjectId.isValid(_id)) {
-    return res.status(400).json({ message: "question unavailable" });
-  }
+  const { value, userId } = req.body;
+  if (!mongoose.Types.ObjectId.isValid(_id)) return res.status(404).send("question unavailable...");
+
   try {
-    const questionDoc = await question.findById(_id);
-    const upindex = questionDoc.upvote.findIndex((id) => id === String(userid));
-    const downindex = questionDoc.downvote.findIndex(
-      (id) => id === String(userid)
-    );
-    if (value === "upvote") {
-      if (downindex !== -1) {
-        questionDoc.downvote = questionDoc.downvote.filter(
-          (id) => id !== String(userid)
-        );
-      }
-      if (upindex === -1) {
-        questionDoc.upvote.push(userid);
-      } else {
-        questionDoc.upvote = questionDoc.upvote.filter((id) => id !== String(userid));
-      }
-    } else if (value === "downvote") {
-      if (upindex !== -1) {
-        questionDoc.upvote = questionDoc.upvote.filter((id) => id !== String(userid));
-      }
-      if (downindex === -1) {
-        questionDoc.downvote.push(userid);
-      } else {
-        questionDoc.downvote = questionDoc.downvote.filter(
-          (id) => id !== String(userid)
-        );
-      }
+    const question = await Questions.findById(_id);
+    const upIndex = question.upVote.findIndex((id) => id === String(userId));
+    const downIndex = question.downVote.findIndex((id) => id === String(userId));
+
+    if (value === "upVote") {
+      if (downIndex !== -1) question.downVote = question.downVote.filter((id) => id !== String(userId));
+      if (upIndex === -1) question.upVote.push(userId);
+      else question.upVote = question.upVote.filter((id) => id !== String(userId));
+    } else if (value === "downVote") {
+      if (upIndex !== -1) question.upVote = question.upVote.filter((id) => id !== String(userId));
+      if (downIndex === -1) question.downVote.push(userId);
+      else question.downVote = question.downVote.filter((id) => id !== String(userId));
     }
-    const questionvote = await question.findByIdAndUpdate(_id, questionDoc, { new: true });
-    res.status(200).json({ data: questionvote });
+    await Questions.findByIdAndUpdate(_id, question);
+    res.status(200).json({ message: "voted successfully..." });
   } catch (error) {
-    res.status(500).json("something went wrong..");
-    return;
+    res.status(404).json({ message: "id not found" });
   }
 };
