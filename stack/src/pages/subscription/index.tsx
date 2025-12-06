@@ -9,6 +9,8 @@ const SubscriptionPage = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  // ✅ FIX: Hydration Safety State
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
@@ -38,15 +40,11 @@ const SubscriptionPage = () => {
     }
   };
 
-  // ✅ LOGIC: Define Weights to determine "Higher" vs "Lower" plans
+  // Logic to disable buttons based on current plan
   const planWeights: { [key: string]: number } = {
-    "Free": 0,
-    "Bronze": 1,
-    "Silver": 2,
-    "Gold": 3
+    "Free": 0, "Bronze": 1, "Silver": 2, "Gold": 3
   };
-
-  const currentPlanWeight = planWeights[user?.subscriptionPlan || "Free"];
+  const currentPlanWeight = user ? planWeights[user.subscriptionPlan || "Free"] : 0;
 
   const plans = [
     { name: "Free", price: "₹0", limit: "1 question/day", color: "bg-gray-100" },
@@ -55,6 +53,7 @@ const SubscriptionPage = () => {
     { name: "Gold", price: "₹1000/mo", limit: "Unlimited questions", color: "bg-yellow-100" },
   ];
 
+  // ✅ CRITICAL FIX: Return null until browser loads
   if (!hasMounted) return null;
 
   return (
@@ -76,7 +75,6 @@ const SubscriptionPage = () => {
             {plans.map((plan) => {
               const isCurrentPlan = user?.subscriptionPlan === plan.name;
               const planWeight = planWeights[plan.name];
-              // ✅ Disable if this plan is lower than or equal to current plan (unless it IS the current plan)
               const isDowngrade = planWeight < currentPlanWeight;
               const isDisabled = isCurrentPlan || isDowngrade || loading;
 
