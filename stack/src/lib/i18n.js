@@ -9,16 +9,17 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
+    supportedLngs: ['en', 'fr', 'es', 'hi', 'pt', 'zh'], // ✅ Explicitly supported languages
+    load: 'languageOnly', // ✅ Fix: Loads 'fr' even if browser says 'fr-FR'
     debug: false,
     interpolation: {
       escapeValue: false, 
     },
     backend: {
-      // This path loads the translation files from public/locales
       loadPath: '/locales/{{lng}}/translation.json',
     },
     react: {
-      useSuspense: false // Fixes hydration issues with loading translations
+      useSuspense: false 
     }
   });
 

@@ -1,29 +1,26 @@
 import mongoose from "mongoose";
 
 const postSchema = mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
-  content: { type: String },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  content: { type: String, required: true },
   media: {
-    type: {
-      type: String,
-      enum: ['image', 'video'],
-      required: true
+    type: { 
+      type: String, 
+      enum: ['image', 'video', 'text'], // ✅ Added 'text' as valid option
+      default: 'text' 
     },
-    url: { type: String, required: true }
+    url: { 
+      type: String, 
+      default: "" // ✅ Made optional (default empty string)
+    }
   },
-  likes: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'user'
-  }],
-  shares: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'user'
-  }],
+  likes: [{ type: String }], // Array of User IDs
   comments: [{
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
-    content: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now }
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    content: { type: String },
+    postedOn: { type: Date, default: Date.now }
   }],
+  shares: [{ type: String }],
   createdAt: { type: Date, default: Date.now }
 });
 

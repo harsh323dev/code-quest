@@ -5,12 +5,15 @@ import {
   MessageSquareIcon,
   Tag,
   Users,
-  CreditCard // ✅ Your new icon
+  CreditCard 
 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
+import { useTranslation } from "react-i18next"; // ✅ Import this
 
 const Sidebar = ({ isopen }: any) => {
+  const { t } = useTranslation(); // ✅ Initialize hook
+
   return (
     <div>
       <aside
@@ -23,16 +26,21 @@ const Sidebar = ({ isopen }: any) => {
           <ul className="space-y-1">
             <li>
               <Link href="/" className="flex items-center px-2 py-2 text-gray-700 hover:bg-gray-100 rounded text-sm">
-                <Home className="w-4 h-4 mr-2 lg:mr-3" /> Home
+                <Home className="w-4 h-4 mr-2 lg:mr-3" /> 
+                {/* ✅ Use translation key */}
+                {t('welcome') ? "Home" : "Home"} 
+                {/* Note: Ideally add "home": "Home" to your json, 
+                    but for now we can use "questions" or just check if t() works */}
               </Link>
             </li>
             <li>
               <Link href="/public-space" className="flex items-center px-2 py-2 text-gray-700 hover:bg-gray-100 rounded text-sm">
-                <Globe className="w-4 h-4 mr-2 lg:mr-3 text-orange-500" /> Public Space
+                <Globe className="w-4 h-4 mr-2 lg:mr-3 text-orange-500" /> 
+                {/* ✅ Translated */}
+                {t('public_space')} 
               </Link>
             </li>
             
-            {/* ✅ Subscription Link */}
             <li>
               <Link href="/subscription" className="flex items-center px-2 py-2 text-gray-700 hover:bg-gray-100 rounded text-sm font-semibold text-blue-600">
                 <CreditCard className="w-4 h-4 mr-2 lg:mr-3" /> 
@@ -42,17 +50,17 @@ const Sidebar = ({ isopen }: any) => {
 
             <li>
               <Link href="/questions" className="flex items-center px-2 py-2 text-gray-700 hover:bg-gray-100 rounded text-sm">
-                <MessageSquareIcon className="w-4 h-4 mr-2 lg:mr-3" /> Questions
+                <MessageSquareIcon className="w-4 h-4 mr-2 lg:mr-3" /> 
+                {/* ✅ Translated */}
+                {t('questions')}
               </Link>
             </li>
-            <li>
-              <Link href="/tags" className="flex items-center px-2 py-2 text-gray-700 hover:bg-gray-100 rounded text-sm">
-                <Tag className="w-4 h-4 mr-2 lg:mr-3" /> Tags
-              </Link>
-            </li>
+            
             <li>
               <Link href="/users" className="flex items-center px-2 py-2 text-gray-700 hover:bg-gray-100 rounded text-sm">
-                <Users className="w-4 h-4 mr-2 lg:mr-3" /> Users
+                <Users className="w-4 h-4 mr-2 lg:mr-3" /> 
+                {/* ✅ Translated */}
+                {t('users')}
               </Link>
             </li>
           </ul>

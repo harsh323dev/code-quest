@@ -1,24 +1,26 @@
 import React, { useState, useEffect, FormEvent } from "react";
-import { fetchFeed, createPost, likePost } from "../../lib/api"; 
-import FindFriends from "../../components/FindFriends"; // Adjusted path
+import { fetchFeed, createPost, likePost, commentOnPost } from "../../lib/api"; 
+import FindFriends from "../../components/FindFriends"; 
 import { toast } from "react-toastify";
 import { useAuth } from "../../lib/AuthContext";
 import { useRouter } from "next/router";
-import Sidebar from "../../components/Sidebar"; // Adjusted path
-import Navbar from "../../components/Navbar";   // Adjusted path
+import Sidebar from "../../components/Sidebar"; 
+import Navbar from "../../components/Navbar";      
+import moment from "moment";
 
-// ✅ 1. Define Types to fix TypeScript Errors
+// Define Interfaces
 interface Comment {
   _id: string;
   user: { name: string; email: string };
   content: string;
+  postedOn: string;
 }
 
 interface Post {
   _id: string;
   content: string;
   user: { name: string; email: string };
-  media?: { url: string };
+  media?: { type: 'image' | 'video' | 'text', url: string };
   likes: string[];
   comments: Comment[];
   createdAt: string;
@@ -28,12 +30,16 @@ const PublicSpace = () => {
   const { user } = useAuth();
   const router = useRouter();
   
-  // ✅ 2. Use Type in State
   const [posts, setPosts] = useState<Post[]>([]);
   const [content, setContent] = useState("");
   const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaType, setMediaType] = useState("text"); // 'image' | 'video' | 'text'
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
+  // ✅ STATE FOR COMMENTS (Track which post has comments open)
+  const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
+  const [commentText, setCommentText] = useState("");
+
   useEffect(() => {
     loadPosts();
   }, []);
@@ -50,15 +56,20 @@ const PublicSpace = () => {
   const handlePostSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
+      // Logic: If user pasted a URL but left type as 'text', default to 'image'
+      let finalType = mediaType;
+      if (mediaUrl && mediaType === 'text') finalType = 'image'; 
+
       await createPost({ 
         content, 
-        mediaType: mediaUrl ? "image" : "text", 
+        mediaType: finalType, 
         mediaUrl 
       });
       
       toast.success("Posted successfully!");
       setContent("");
       setMediaUrl("");
+      setMediaType("text");
       loadPosts(); 
     } catch (error: any) {
       const msg = error.response?.data?.message || "Failed to post";
@@ -72,6 +83,28 @@ const PublicSpace = () => {
       loadPosts(); 
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  // ✅ HANDLER FOR COMMENTS
+  const handleCommentSubmit = async (postId: string) => {
+    if (!commentText.trim()) return;
+    try {
+      await commentOnPost(postId, commentText);
+      toast.success("Comment added");
+      setCommentText("");
+      loadPosts(); // Refresh feed to show new comment
+    } catch (error) {
+      toast.error("Failed to comment");
+    }
+  };
+
+  // ✅ TOGGLE COMMENT BOX
+  const toggleComments = (postId: string) => {
+    if (activeCommentId === postId) {
+      setActiveCommentId(null); // Close if already open
+    } else {
+      setActiveCommentId(postId); // Open this specific post
     }
   };
 
@@ -89,7 +122,7 @@ const PublicSpace = () => {
                 <div className="flex-grow lg:flex-[3]">
                     <h1 className="text-2xl font-bold mb-6 text-gray-800">Public Space</h1>
                     
-                    {/* POST INPUT */}
+                    {/* POST INPUT FORM */}
                     <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-sm">
                         <h3 className="font-semibold mb-3 text-gray-700">Create a Post</h3>
                         <form onSubmit={handlePostSubmit}>
@@ -101,13 +134,30 @@ const PublicSpace = () => {
                                 className="w-full p-3 border border-gray-300 rounded-md mb-3 focus:outline-none focus:ring-2 focus:ring-orange-200 text-black bg-white"
                                 rows={3}
                             />
-                            <input 
-                                type="text" 
-                                placeholder="Image URL (Optional)" 
-                                value={mediaUrl}
-                                onChange={(e) => setMediaUrl(e.target.value)}
-                                className="w-full p-2 border border-gray-300 rounded-md mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-200 text-black bg-white"
-                            />
+                            
+                            <div className="flex gap-2 mb-3">
+                                {/* ✅ MEDIA TYPE SELECTOR */}
+                                <select 
+                                    value={mediaType}
+                                    onChange={(e) => setMediaType(e.target.value)}
+                                    className="p-2 border border-gray-300 rounded-md text-sm text-black bg-white focus:outline-none"
+                                >
+                                    <option value="text">No Media</option>
+                                    <option value="image">Image</option>
+                                    <option value="video">Video</option>
+                                </select>
+                                
+                                {/* ✅ URL INPUT */}
+                                <input 
+                                    type="text" 
+                                    placeholder={mediaType === 'video' ? "Video URL (mp4/webm)" : "Image URL"} 
+                                    value={mediaUrl}
+                                    onChange={(e) => setMediaUrl(e.target.value)}
+                                    disabled={mediaType === 'text'}
+                                    className="flex-1 p-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-200 text-black bg-white disabled:bg-gray-100"
+                                />
+                            </div>
+
                             <button type="submit" className="bg-[#ef8236] text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors font-medium">
                                 Post
                             </button>
@@ -122,17 +172,34 @@ const PublicSpace = () => {
                                   <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-sm text-gray-600">
                                     {post.user?.name?.charAt(0).toUpperCase()}
                                   </div>
-                                  {post.user?.name}
+                                  <div>
+                                    <div className="text-sm">{post.user?.name}</div>
+                                    <div className="text-xs text-gray-400 font-normal">{moment(post.createdAt).fromNow()}</div>
+                                  </div>
                                 </div>
-                                <p className="text-gray-700 mb-3">{post.content}</p>
+                                
+                                <p className="text-gray-800 mb-3 whitespace-pre-wrap">{post.content}</p>
+                                
+                                {/* ✅ RENDER VIDEO OR IMAGE */}
                                 {post.media?.url && (
-                                  <img 
-                                    src={post.media.url} 
-                                    alt="Post media" 
-                                    className="max-w-full max-h-[400px] rounded-md mb-3 object-cover" 
-                                  />
+                                  <div className="mb-3">
+                                    {post.media.type === 'video' ? (
+                                        <video controls className="w-full max-h-[400px] rounded-md bg-black">
+                                            <source src={post.media.url} type="video/mp4" />
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    ) : (
+                                        <img 
+                                            src={post.media.url} 
+                                            alt="Post media" 
+                                            className="max-w-full max-h-[400px] rounded-md object-cover" 
+                                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} 
+                                        />
+                                    )}
+                                  </div>
                                 )}
                                 
+                                {/* ACTIONS */}
                                 <div className="flex items-center gap-4 text-sm text-gray-500 pt-3 border-t border-gray-100">
                                     <button 
                                       onClick={() => handleLike(post._id)} 
@@ -140,10 +207,50 @@ const PublicSpace = () => {
                                     >
                                       <span>👍</span> {post.likes.length} Likes
                                     </button>
-                                    <span className="flex items-center gap-1">
+                                    
+                                    {/* ✅ COMMENTS BUTTON */}
+                                    <button 
+                                      onClick={() => toggleComments(post._id)}
+                                      className="flex items-center gap-1 hover:text-blue-600 transition"
+                                    >
                                       <span>💬</span> {post.comments.length} Comments
-                                    </span>
+                                    </button>
                                 </div>
+
+                                {/* ✅ COMMENTS SECTION (Visible only if active) */}
+                                {activeCommentId === post._id && (
+                                    <div className="mt-4 pt-4 border-t border-gray-100 bg-gray-50 p-3 rounded-md">
+                                        
+                                        {/* List Comments */}
+                                        <div className="space-y-3 mb-4 max-h-60 overflow-y-auto">
+                                            {post.comments.length === 0 && <p className="text-xs text-gray-400 italic">No comments yet.</p>}
+                                            {post.comments.map((c, idx) => (
+                                                <div key={idx} className="text-sm">
+                                                    <span className="font-bold text-gray-700">{c.user?.name}: </span>
+                                                    <span className="text-gray-600">{c.content}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Input */}
+                                        <div className="flex gap-2">
+                                            <input 
+                                                type="text" 
+                                                placeholder="Write a comment..." 
+                                                className="flex-1 p-2 border rounded-md text-sm text-black bg-white focus:outline-none focus:border-blue-400"
+                                                value={commentText}
+                                                onChange={(e) => setCommentText(e.target.value)}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleCommentSubmit(post._id)}
+                                            />
+                                            <button 
+                                                onClick={() => handleCommentSubmit(post._id)}
+                                                className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700"
+                                            >
+                                                Send
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
