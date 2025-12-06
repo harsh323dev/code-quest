@@ -12,19 +12,18 @@ export const AskQuestion = async (req, res) => {
 
     // A. RESET DAILY COUNTER IF NEW DAY
     const todayStr = new Date().toDateString();
-    // If the last question wasn't posted today, reset the counter
     if (user.lastQuestionDate !== todayStr) {
       user.questionsPostedToday = 0;
       user.lastQuestionDate = todayStr;
       await user.save();
     }
 
-    // B. SUBSCRIPTION LIMITS (Strict Requirement)
+    // B. SUBSCRIPTION LIMITS
     const PLAN_LIMITS = { 
         'Free': 1, 
         'Bronze': 5, 
-        'Silver': 10,  // ₹300 Plan
-        'Gold': Infinity // ₹1000 Plan
+        'Silver': 10,
+        'Gold': Infinity
     };
     
     const userPlan = user.subscriptionPlan || 'Free';
@@ -43,7 +42,6 @@ export const AskQuestion = async (req, res) => {
 
     // E. UPDATE USER STATS
     user.questionsPostedToday += 1;
-    // We update the date again to be sure
     user.lastQuestionDate = new Date(); 
     await user.save();
 

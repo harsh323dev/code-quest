@@ -1,23 +1,19 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000",
+  baseURL: "http://localhost:5000", // ✅ REMOVE /api - not used in your backend
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-axiosInstance.interceptors.request.use((req) => {
-  if (typeof window !== "undefined") {
-    const user = localStorage.getItem("user");
-    if (user) {
-      const token = JSON.parse(user).token;
-      if (token) {
-        req.headers.Authorization = `Bearer ${token}`;
-      }
-    }
+// ✅ Add token to requests automatically
+axiosInstance.interceptors.request.use((config) => {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  if (user?.token) {
+    config.headers.Authorization = `Bearer ${user.token}`;
   }
-  return req;
+  return config;
 });
 
 export default axiosInstance;

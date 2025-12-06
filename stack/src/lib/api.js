@@ -1,4 +1,3 @@
-// src/lib/api.js
 import axiosInstance from "./axiosinstance";
 
 // --- USER / FRIENDSHIPS ---
@@ -8,6 +7,17 @@ export const getAllUsers = async () => {
 
 export const addFriend = async (friendId) => {
   return await axiosInstance.patch(`/user/friend/${friendId}`);
+};
+
+// --- AUTH & SECURITY ---
+export const forgotPassword = async (identifier) => {
+  // identifier can be email OR phone
+  return await axiosInstance.post("/user/forgot-password", { identifier });
+};
+
+export const verifyLoginOtp = async (data) => {
+  // data = { email, otp }
+  return await axiosInstance.post("/user/login/verify", data);
 };
 
 // --- POSTS / FEED ---
@@ -31,16 +41,12 @@ export const commentOnPost = async (postId, content) => {
   return await axiosInstance.post(`/posts/${postId}/comment`, { content });
 };
 
+// --- SUBSCRIPTIONS ---
 export const buySubscription = async (planType) => {
-  // planType: "Free", "Bronze", "Silver", "Gold"
   return await axiosInstance.post("/payment/subscribe", { planType });
 };
 
+// --- REWARDS ---
 export const transferPoints = async (data) => {
-  // data = { receiverEmail, amount }
   return await axiosInstance.post("/user/transfer-points", data);
-};
-
-export const forgotPassword = async (email) => {
-  return await axiosInstance.post("/user/forgot-password", { email });
 };

@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 
 import userRoutes from "./routes/auth.js";
 import questionRoutes from "./routes/question.js";
-import answerRoutes from "./routes/answer.js";
+import answerRoutes from "./routes/answer.js"; // ✅ ADD THIS
 import postRoutes from "./routes/post.js";
 import paymentRoutes from "./routes/payment.js";
 
@@ -23,7 +23,7 @@ app.get("/", (req, res) => {
 // Routes
 app.use('/user', userRoutes);
 app.use('/question', questionRoutes);
-app.use('/answer', answerRoutes);
+app.use('/answer', answerRoutes); // ✅ ADD THIS
 app.use('/posts', postRoutes);
 app.use('/payment', paymentRoutes);
 

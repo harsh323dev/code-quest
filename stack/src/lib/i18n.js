@@ -1,3 +1,4 @@
+// src/lib/i18n.js
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import Backend from 'i18next-http-backend';
@@ -9,8 +10,8 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
-    supportedLngs: ['en', 'fr', 'es', 'hi', 'pt', 'zh'], // ✅ Explicitly supported languages
-    load: 'languageOnly', // ✅ Fix: Loads 'fr' even if browser says 'fr-FR'
+    supportedLngs: ['en', 'fr', 'es', 'hi', 'pt', 'zh'], 
+    load: 'languageOnly', 
     debug: false,
     interpolation: {
       escapeValue: false, 

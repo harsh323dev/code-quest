@@ -10,14 +10,13 @@ const loginHistorySchema = mongoose.Schema({
 
 const userSchema = mongoose.Schema({
   name: { type: String, required: true },
-  email: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   
-  // ✅ ADDED PHONE NUMBER FIELD
   phoneNumber: { type: String, default: "" }, 
   
-  about: { type: String },
-  tags: { type: [String] },
+  about: { type: String, default: "" },
+  tags: { type: [String], default: [] },
   joinedOn: { type: Date, default: Date.now },
   
   friends: [{ type: String }],

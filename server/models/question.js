@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 
-const QuestionSchema = mongoose.Schema({
+const questionSchema = mongoose.Schema({
   questionTitle: { type: String, required: "Question must have a title" },
   questionBody: { type: String, required: "Question must have a body" },
-  questionTags: { type: [String], required: "Question must have a tags" },
+  questionTags: { type: [String], required: "Question must have tags" },
   noOfAnswers: { type: Number, default: 0 },
   upVote: { type: [String], default: [] },
   downVote: { type: [String], default: [] },
@@ -15,7 +15,10 @@ const QuestionSchema = mongoose.Schema({
     userAnswered: String,
     userId: String,
     answeredOn: { type: Date, default: Date.now },
-  }],
+    upVote: { type: [String], default: [] },
+    downVote: { type: [String], default: [] },
+    rewardPaid: { type: Boolean, default: false }
+  }]
 });
 
-export default mongoose.model("Question", QuestionSchema);
+export default mongoose.model("Question", questionSchema);
