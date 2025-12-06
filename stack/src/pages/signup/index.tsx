@@ -12,29 +12,43 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/lib/AuthContext";
 import { useState } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation"; // Fixed: use next/navigation for App Router
 import { toast } from "react-toastify";
+
+interface FormData {
+  name: string;
+  email: string;
+  password: string;
+}
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { Signup, loading } = useAuth();
-  const [form, setform] = useState({ name: "", email: "", password: "" });
-  const handleChange = (e: any) => {
-    setform({ ...form, [e.target.id]: e.target.value });
+  const { Signup } = useAuth();
+  const [form, setForm] = useState<FormData>({ name: "", email: "", password: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false); // Local loading state
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.id]: e.target.value });
   };
-  const handlesubmit = async (e: any) => {
+  
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.password) {
-      toast.error("ALL Fields are required");
+      toast.error("All fields are required");
       return;
     }
+    setIsSubmitting(true);
     try {
       await Signup(form);
       router.push("/");
     } catch (error) {
-      console.log(error);
+      console.error("Signup error:", error);
+      toast.error("Signup failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -50,7 +64,7 @@ export default function SignUpPage() {
             </span>
           </Link>
         </div>
-        <form onSubmit={handlesubmit}>
+        <form onSubmit={handleSubmit}>
           <Card>
             <CardHeader className="space-y-1 text-center">
               <CardTitle className="text-xl lg:text-2xl">
@@ -62,8 +76,10 @@ export default function SignUpPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <Button
+                type="button"
                 variant="outline"
                 className="w-full bg-transparent text-sm"
+                disabled={isSubmitting}
               >
                 <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
                   <path
@@ -87,8 +103,10 @@ export default function SignUpPage() {
               </Button>
 
               <Button
+                type="button"
                 variant="outline"
                 className="w-full bg-transparent text-sm"
+                disabled={isSubmitting}
               >
                 <svg
                   className="w-4 h-4 mr-2"
@@ -124,6 +142,7 @@ export default function SignUpPage() {
                   placeholder="Enter your display name"
                   value={form.name}
                   onChange={handleChange}
+                  disabled={isSubmitting}
                 />
               </div>
               <div className="space-y-2">
@@ -136,6 +155,7 @@ export default function SignUpPage() {
                   placeholder="m@example.com"
                   value={form.email}
                   onChange={handleChange}
+                  disabled={isSubmitting}
                 />
               </div>
               <div className="space-y-2">
@@ -147,6 +167,7 @@ export default function SignUpPage() {
                   type="password"
                   value={form.password}
                   onChange={handleChange}
+                  disabled={isSubmitting}
                 />
                 <p className="text-xs text-gray-600">
                   Passwords must contain at least eight characters, including at
@@ -155,7 +176,7 @@ export default function SignUpPage() {
               </div>
 
               <div className="flex items-start space-x-2">
-                <Checkbox id="terms" className="mt-1" />
+                <Checkbox id="terms" className="mt-1" disabled={isSubmitting} />
                 <Label htmlFor="terms" className="text-sm leading-relaxed">
                   I agree to the{" "}
                   <Link href="#" className="text-blue-600 hover:underline">
@@ -171,8 +192,9 @@ export default function SignUpPage() {
               <Button
                 type="submit"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-sm"
+                disabled={isSubmitting}
               >
-                {loading ? "Signing up.." : "Sign up"}
+                {isSubmitting ? "Signing up..." : "Sign up"}
               </Button>
 
               <div className="text-center text-sm">

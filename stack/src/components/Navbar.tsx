@@ -77,7 +77,7 @@ const Navbar = ({ handleslidein }: any) => {
                 onClick={handlelogout}
                 className="text-sm font-medium text-[#454545] bg-[#e7f8fe] hover:bg-[#d3e4eb] border border-blue-500 px-4 py-1.5 rounded transition"
               >
-                {t('logout')} {/* ✅ Translated */}
+                {t('Logout')} {/* ✅ Translated */}
               </button>
             </>
           )}

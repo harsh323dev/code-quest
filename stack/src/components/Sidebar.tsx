@@ -1,20 +1,14 @@
 import { cn } from "@/lib/utils";
 import {
-  Bookmark,
-  Bot,
-  Building,
-  FileText,
-  Globe, // Added icon for Public Space
+  Globe,
   Home,
-  MessageSquare,
   MessageSquareIcon,
   Tag,
-  Trophy,
   Users,
+  CreditCard // ✅ Your new icon
 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
-import { Badge } from "./ui/badge"; // Ensure this path is correct based on your structure
 
 const Sidebar = ({ isopen }: any) => {
   return (
@@ -28,41 +22,27 @@ const Sidebar = ({ isopen }: any) => {
         <nav className="p-2 lg:p-4 overflow-y-auto h-full">
           <ul className="space-y-1">
             <li>
-              <Link
-                href="/"
-                className="flex items-center px-2 py-2 text-gray-700 hover:bg-gray-100 rounded text-sm"
-              >
-                <Home className="w-4 h-4 mr-2 lg:mr-3" />
-                Home
+              <Link href="/" className="flex items-center px-2 py-2 text-gray-700 hover:bg-gray-100 rounded text-sm">
+                <Home className="w-4 h-4 mr-2 lg:mr-3" /> Home
+              </Link>
+            </li>
+            <li>
+              <Link href="/public-space" className="flex items-center px-2 py-2 text-gray-700 hover:bg-gray-100 rounded text-sm">
+                <Globe className="w-4 h-4 mr-2 lg:mr-3 text-orange-500" /> Public Space
               </Link>
             </li>
             
-            {/* ✅ ADDED PUBLIC SPACE LINK */}
+            {/* ✅ Subscription Link */}
             <li>
-              <Link
-                href="/public-space"
-                className="flex items-center px-2 py-2 text-gray-700 hover:bg-gray-100 rounded text-sm font-medium"
-              >
-                <Globe className="w-4 h-4 mr-2 lg:mr-3 text-orange-500" />
-                Public Space
+              <Link href="/subscription" className="flex items-center px-2 py-2 text-gray-700 hover:bg-gray-100 rounded text-sm font-semibold text-blue-600">
+                <CreditCard className="w-4 h-4 mr-2 lg:mr-3" /> 
+                Plans & Pricing
               </Link>
             </li>
 
             <li>
-              <Link
-                href="/questions"
-                className="flex items-center px-2 py-2 text-gray-700 hover:bg-gray-100 rounded text-sm"
-              >
-                <MessageSquareIcon className="w-4 h-4 mr-2 lg:mr-3" />
-                Questions
-              </Link>
-            </li>
-            
-            {/* ... Rest of your existing links ... */}
-            <li>
-              <Link href="#" className="flex items-center px-2 py-2 text-gray-700 hover:bg-gray-100 rounded text-sm">
-                <Bot className="w-4 h-4 mr-2 lg:mr-3" />
-                AI Assist <Badge variant="secondary" className="ml-auto text-xs">Labs</Badge>
+              <Link href="/questions" className="flex items-center px-2 py-2 text-gray-700 hover:bg-gray-100 rounded text-sm">
+                <MessageSquareIcon className="w-4 h-4 mr-2 lg:mr-3" /> Questions
               </Link>
             </li>
             <li>

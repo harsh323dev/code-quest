@@ -5,57 +5,54 @@ import jwt from "jsonwebtoken";
 import useragent from "express-useragent";
 import requestIp from "request-ip";
 
-// --- 1. SIGNUP (Original) ---
+// --- 1. SIGNUP ---
 export const Signup = async (req, res) => {
   const { name, email, password } = req.body;
   try {
-    const exisitinguser = await User.findOne({ email });
-    if (exisitinguser) {
-      return res.status(404).json({ message: "User already exist" });
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(404).json({ message: "User already exists" });
     }
-    const hashpassword = await bcrypt.hash(password, 12);
-    const newuser = await User.create({
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const newUser = await User.create({
       name,
       email,
-      password: hashpassword,
-      // Initialize new fields
+      password: hashedPassword,
       friends: [],
       points: 0,
-      subscriptionPlan: 'Free'
+      subscriptionPlan: 'Free',
+      loginHistory: []
     });
+
     const token = jwt.sign(
-      { email: newuser.email, id: newuser._id },
+      { email: newUser.email, id: newUser._id },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "24h" }
     );
-    res.status(200).json({ data: newuser, token });
+
+    res.status(200).json({ data: newUser, token });
   } catch (error) {
     console.log(error); 
-    res.status(500).json({ message: "something went wrong.." });
+    res.status(500).json({ message: "Something went wrong..." });
   }
 };
 
-// --- 2. LOGIN (With Tracking & Time Restrictions) ---
+// --- 2. LOGIN ---
 export const Login = async (req, res) => {
   const { email, password } = req.body;
   
-  // Get Device/IP Info
   const clientIp = requestIp.getClientIp(req);
-  const source = req.headers['user-agent'];
-  const ua = useragent.parse(source);
-  
-  const browser = ua.browser; 
-  const os = ua.os;
+  const ua = useragent.parse(req.headers['user-agent']);
   const isMobile = ua.isMobile;
-  const deviceType = isMobile ? "Mobile" : "Desktop";
 
   try {
-    const exisitinguser = await User.findOne({ email });
-    if (!exisitinguser) {
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
       return res.status(404).json({ message: "User does not exist" });
     }
 
-    // CHECK MOBILE TIME RESTRICTION (10 AM to 1 PM)
+    // Rule: Restrict Mobile Access (10 AM - 1 PM)
     if (isMobile) {
       const currentHour = new Date().getHours(); 
       if (currentHour < 10 || currentHour >= 13) {
@@ -65,42 +62,43 @@ export const Login = async (req, res) => {
       }
     }
 
-    const ispasswordcrct = await bcrypt.compare(password, exisitinguser.password);
-    if (!ispasswordcrct) {
+    const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
+    if (!isPasswordCorrect) {
       return res.status(400).json({ message: "Invalid password" });
     }
 
-    // Save Login History
-    if (!exisitinguser.loginHistory) exisitinguser.loginHistory = [];
-    exisitinguser.loginHistory.push({
+    // Track Login
+    if (!existingUser.loginHistory) existingUser.loginHistory = [];
+    existingUser.loginHistory.push({
       ip: clientIp,
-      browser,
-      os,
-      deviceType,
+      browser: ua.browser,
+      os: ua.os,
+      deviceType: isMobile ? "Mobile" : "Desktop",
       loginTime: new Date()
     });
-    await exisitinguser.save();
+    await existingUser.save();
 
     const token = jwt.sign(
-      { email: exisitinguser.email, id: exisitinguser._id },
+      { email: existingUser.email, id: existingUser._id },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "24h" }
     );
-    res.status(200).json({ data: exisitinguser, token });
+
+    res.status(200).json({ data: existingUser, token });
   } catch (error) {
     console.log(error); 
-    res.status(500).json({ message: "something went wrong.." });
+    res.status(500).json({ message: "Something went wrong..." });
   }
 };
 
 // --- 3. GET ALL USERS ---
 export const getallusers = async (req, res) => {
   try {
-    const alluser = await User.find();
-    res.status(200).json({ data: alluser });
+    const allUsers = await User.find();
+    res.status(200).json({ data: allUsers });
   } catch (error) {
     console.log(error); 
-    res.status(500).json({ message: "something went wrong.." });
+    res.status(500).json({ message: "Something went wrong..." });
   }
 };
 
@@ -108,23 +106,25 @@ export const getallusers = async (req, res) => {
 export const updateprofile = async (req, res) => {
   const { id: _id } = req.params;
   const { name, about, tags } = req.body.editForm;
+
   if (!mongoose.Types.ObjectId.isValid(_id)) {
     return res.status(400).json({ message: "User unavailable" });
   }
+
   try {
-    const updateprofile = await User.findByIdAndUpdate(
+    const updatedProfile = await User.findByIdAndUpdate(
       _id,
       { $set: { name: name, about: about, tags: tags } },
       { new: true }
     );
-    res.status(200).json({ data: updateprofile });
+    res.status(200).json({ data: updatedProfile });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "something went wrong.." });
+    res.status(500).json({ message: "Something went wrong..." });
   }
 };
 
-// --- 5. ADD FRIEND (Public Space) ---
+// --- 5. ADD FRIEND ---
 export const addFriend = async (req, res) => {
   const { id: friendId } = req.params; 
   const userId = req.userId; 
@@ -150,14 +150,18 @@ export const addFriend = async (req, res) => {
 
 // --- 6. FORGOT PASSWORD ---
 export const ForgotPassword = async (req, res) => {
-  const { email } = req.body;
+  const { identifier } = req.body; // Changed from email to identifier (Email OR Phone)
+  
   try {
-    const existingUser = await User.findOne({ email });
+    // Search by Email OR Phone
+    const existingUser = await User.findOne({
+      $or: [{ email: identifier }, { phoneNumber: identifier }]
+    });
+
     if (!existingUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Check Rate Limit (1 time a day)
     const now = new Date();
     if (existingUser.lastPasswordResetRequest) {
       const lastRequest = new Date(existingUser.lastPasswordResetRequest);
@@ -168,12 +172,12 @@ export const ForgotPassword = async (req, res) => {
 
       if (isSameDay) {
         return res.status(429).json({ 
-          message: "You can only request a password reset once per day." 
+          message: "Warning: You can use Forgot Password only 1 time a day." 
         });
       }
     }
 
-    // Generate Random Password
+    // Generate Password (Letters Only)
     const generatePassword = (length) => {
       const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
       let result = "";
@@ -182,6 +186,7 @@ export const ForgotPassword = async (req, res) => {
       }
       return result;
     };
+
     const newRawPassword = generatePassword(10); 
     const hashedPassword = await bcrypt.hash(newRawPassword, 12);
     
@@ -189,10 +194,10 @@ export const ForgotPassword = async (req, res) => {
     existingUser.lastPasswordResetRequest = now;
     await existingUser.save();
 
-    console.log(`[PASSWORD RESET] New Password for ${email}: ${newRawPassword}`);
+    console.log(`[PASSWORD RESET] New Password for ${existingUser.email}: ${newRawPassword}`);
 
     res.status(200).json({ 
-      message: "Password reset successful. Check console/email.",
+      message: "Password reset successful. Check your email/phone.",
       tempPassword: newRawPassword 
     });
   } catch (error) {
@@ -230,7 +235,7 @@ export const transferPoints = async (req, res) => {
   }
 };
 
-// --- 8. OTP GENERATION & VERIFICATION (Language Security) ---
+// --- 8. OTP GENERATION ---
 const otpStore = {}; 
 
 export const generateOTP = async (req, res) => {
@@ -238,11 +243,7 @@ export const generateOTP = async (req, res) => {
   const otp = Math.floor(1000 + Math.random() * 9000).toString();
   otpStore[contact] = otp;
 
-  if (channel === 'email') {
-      console.log(`[EMAIL OTP] Sending Code ${otp} to ${contact}`);
-  } else {
-      console.log(`[SMS OTP] Sending Code ${otp} to Mobile ${contact}`);
-  }
+  console.log(`[${channel === 'email' ? 'EMAIL' : 'SMS'} OTP] Sending Code ${otp} to ${contact}`);
   res.status(200).json({ message: `OTP sent to ${channel}` });
 };
 

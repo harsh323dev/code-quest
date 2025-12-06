@@ -13,18 +13,18 @@ const isPaymentAllowed = () => {
   
   const hours = istTime.getHours(); // Returns 0-23 in IST
   
-  // Rule: "work on 10 to 11 AM IST"
-  // This means 10:00:00 to 10:59:59 inclusive
+  // Rule: "work on 10 to 11 AM IST" (10:00 - 10:59)
   return hours === 10;
 };
 
 // --- MOCK PAYMENT CONTROLLER ---
 export const buySubscription = async (req, res) => {
-  const { planType } = req.body; // Expect 'Bronze', 'Silver', 'Gold'
-  const userId = req.userId;     // From Auth Middleware
+  const { planType } = req.body; 
+  const userId = req.userId;    
 
   // 1. Enforce Time Restriction
-  // For testing, you can comment this out. For final submission, keep it.
+  // Note: For demo purposes, comment this out if testing outside 10-11 AM.
+  // For submission, keep it enabled.
   if (!isPaymentAllowed()) {
      return res.status(403).json({ 
        message: "Payment Gateway Closed. Please try between 10:00 AM and 11:00 AM IST." 
@@ -44,12 +44,11 @@ export const buySubscription = async (req, res) => {
         return res.status(404).json({ message: "User not found" });
     }
 
-    // 3. Update User Plan (Simulating successful payment)
+    // 3. Update User Plan
     user.subscriptionPlan = planType;
     await user.save();
 
-    // 4. "Send Email" (Simulated)
-    // In a real internship job, you'd use 'nodemailer' here.
+    // 4. Invoice Email (Requirement)
     console.log(`
     ========================================
     [MOCK EMAIL SERVICE]

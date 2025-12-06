@@ -1,13 +1,18 @@
 import React, { useState, useEffect, FormEvent } from "react";
 import { fetchFeed, createPost, likePost } from "../../lib/api"; 
-import FindFriends from "../../components/FindFriends"; // ✅ Make sure FindFriends is here or in ../../components/ui/FindFriends
+import FindFriends from "../../components/FindFriends"; // Adjusted path
 import { toast } from "react-toastify";
 import { useAuth } from "../../lib/AuthContext";
 import { useRouter } from "next/router";
+import Sidebar from "../../components/Sidebar"; // Adjusted path
+import Navbar from "../../components/Navbar";   // Adjusted path
 
-// ✅ FIXED IMPORTS: pointing to 'ui' folder based on your file tree
-import Sidebar from "../../components/Sidebar"; 
-import Navbar from "C://Users//admin//Desktop//Work//My Projects//stackoverflow-clone-main//stack//src//components//Navbar";     
+// ✅ 1. Define Types to fix TypeScript Errors
+interface Comment {
+  _id: string;
+  user: { name: string; email: string };
+  content: string;
+}
 
 interface Post {
   _id: string;
@@ -15,26 +20,20 @@ interface Post {
   user: { name: string; email: string };
   media?: { url: string };
   likes: string[];
-  comments: any[];
+  comments: Comment[];
+  createdAt: string;
 }
 
 const PublicSpace = () => {
   const { user } = useAuth();
   const router = useRouter();
   
-  // ✅ STATE: Manage Sidebar visibility for mobile
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+  // ✅ 2. Use Type in State
   const [posts, setPosts] = useState<Post[]>([]);
   const [content, setContent] = useState("");
   const [mediaUrl, setMediaUrl] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
-  useEffect(() => {
-    if (!user && typeof window !== 'undefined') {
-       // Optional: router.push('/auth'); 
-    }
-  }, [user, router]);
-
   useEffect(() => {
     loadPosts();
   }, []);
@@ -76,25 +75,14 @@ const PublicSpace = () => {
     }
   };
 
-  // ✅ HANDLER: Toggle Sidebar
-  const handleSlideIn = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 1. NAVBAR: Pass the handler */}
-      <Navbar handleslidein={handleSlideIn} />
+      <Navbar handleslidein={() => setIsSidebarOpen(!isSidebarOpen)} />
       
-      <div className="flex pt-[53px]"> {/* Add padding-top to account for fixed navbar */}
-        
-        {/* 2. SIDEBAR: Pass the state */}
+      <div className="flex pt-[53px]">
         <Sidebar isopen={isSidebarOpen} />
         
-        {/* 3. MAIN CONTENT */}
-        {/* 'md:ml-48 lg:ml-64' pushes content to the right when sidebar is visible on desktop */}
-        <main className="flex-1 w-full md:ml-48 lg:ml-64 p-4 lg:p-6 transition-all duration-200">
-            
+        <main className="flex-1 md:ml-48 lg:ml-64 p-6 transition-all duration-200">
             <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-6">
                 
                 {/* CENTER: FEED */}
@@ -110,7 +98,7 @@ const PublicSpace = () => {
                                 onChange={(e) => setContent(e.target.value)}
                                 placeholder="What's on your mind?"
                                 required
-                                className="w-full p-3 border border-gray-300 rounded-md mb-3 focus:outline-none focus:ring-2 focus:ring-orange-200"
+                                className="w-full p-3 border border-gray-300 rounded-md mb-3 focus:outline-none focus:ring-2 focus:ring-orange-200 text-black bg-white"
                                 rows={3}
                             />
                             <input 
@@ -118,7 +106,7 @@ const PublicSpace = () => {
                                 placeholder="Image URL (Optional)" 
                                 value={mediaUrl}
                                 onChange={(e) => setMediaUrl(e.target.value)}
-                                className="w-full p-2 border border-gray-300 rounded-md mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-200"
+                                className="w-full p-2 border border-gray-300 rounded-md mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-200 text-black bg-white"
                             />
                             <button type="submit" className="bg-[#ef8236] text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors font-medium">
                                 Post
@@ -161,7 +149,7 @@ const PublicSpace = () => {
                     </div>
                 </div>
 
-                {/* RIGHT SIDEBAR: FRIENDS */}
+                {/* RIGHT SIDEBAR */}
                 <div className="lg:flex-1 lg:min-w-[250px]">
                     <div className="sticky top-[70px]">
                       <FindFriends />

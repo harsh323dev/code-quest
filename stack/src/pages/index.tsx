@@ -1,182 +1,99 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import Mainlayout from "@/layout/Mainlayout";
-import axiosInstance from "@/lib/axiosinstance";
+import React, { useState, useEffect } from "react";
+import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar"; // Changed LeftSidebar to Sidebar for consistency
+import axiosInstance from "../lib/axiosinstance";
 import Link from "next/link";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
 
-export default function Home() {
-  const [questions, setQuestions] = useState<any[]>([]);
+const Home = () => {
+  const [questionsList, setQuestionsList] = useState<any[]>([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        const res = await axiosInstance.get("/question/get");
-        console.log("API Response:", res.data); // Debug log
-        
-        // Adjust based on your actual API response structure
-        const questionsData = res.data.data || res.data || [];
-        setQuestions(questionsData);
-      } catch (err: any) {
-        console.error("Error fetching questions:", err);
-        setError(err.message || "Failed to load questions");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     fetchQuestions();
   }, []);
 
-  if (loading) {
-    return (
-      <Mainlayout>
-        <div className="flex justify-center items-center min-h-screen">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      </Mainlayout>
-    );
-  }
-
-  if (error) {
-    return (
-      <Mainlayout>
-        <div className="text-center text-red-500 mt-4">Error: {error}</div>
-      </Mainlayout>
-    );
-  }
-
-  if (!questions || questions.length === 0) {
-    return (
-      <Mainlayout>
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-semibold">Top Questions</h1>
-            <button
-              onClick={() => router.push("/ask")}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium"
-            >
-              Ask Question
-            </button>
-          </div>
-          <div className="text-center text-gray-500 mt-4">
-            No questions found. Be the first to ask!
-          </div>
-        </div>
-      </Mainlayout>
-    );
-  }
+  const fetchQuestions = async () => {
+    try {
+      const res = await axiosInstance.get("/question/get");
+      setQuestionsList(res.data);
+    } catch (error) {
+      console.log("Error fetching questions:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <Mainlayout>
-      <main className="min-w-0 p-4 lg:p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <h1 className="text-xl lg:text-2xl font-semibold">Top Questions</h1>
-          <button
-            onClick={() => router.push("/ask")}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium whitespace-nowrap"
-          >
-            Ask Question
-          </button>
-        </div>
-
-        <div className="w-full">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center mb-4 text-sm gap-2 sm:gap-4">
-            <span className="text-gray-600">{questions.length} questions</span>
-            <div className="flex flex-wrap gap-1 sm:gap-2">
-              <button className="px-2 sm:px-3 py-1 bg-gray-200 text-gray-700 rounded text-xs sm:text-sm">
-                Newest
-              </button>
-              <button className="px-2 sm:px-3 py-1 text-gray-600 hover:bg-gray-100 rounded text-xs sm:text-sm">
-                Active
-              </button>
-              <button className="px-2 sm:px-3 py-1 text-gray-600 hover:bg-gray-100 rounded text-xs sm:text-sm">
-                Unanswered
-              </button>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {questions.map((question: any) => (
-              <div key={question._id} className="border-b border-gray-200 pb-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex sm:flex-col items-center sm:items-center text-sm text-gray-600 sm:w-16 lg:w-20 gap-4 sm:gap-2">
-                    <div className="text-center">
-                      <div className="font-medium">
-                        {question.upvote?.length || 0}
-                      </div>
-                      <div className="text-xs">votes</div>
-                    </div>
-                    <div className="text-center">
-                      <div
-                        className={`font-medium ${
-                          (question.answer?.length || 0) > 0
-                            ? "text-green-600 bg-green-100 px-2 py-1 rounded"
-                            : ""
-                        }`}
-                      >
-                        {question.noofanswer || 0}  sz
-                      </div>
-                      <div className="text-xs">
-                        {question.noofanswer === 1 ? "answer" : "answers"}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <Link
-                      href={`/questions/${question._id}`}
-                      className="text-blue-600 hover:text-blue-800 text-base lg:text-lg font-medium mb-2 block"
+    <div className="min-h-screen bg-white">
+      <Navbar handleslidein={() => setIsSidebarOpen(!isSidebarOpen)} />
+      
+      <div className="flex pt-[53px]"> {/* Push below navbar */}
+        
+        {/* Fixed Sidebar */}
+        <Sidebar isopen={isSidebarOpen} />
+        
+        {/* ✅ FIX: Added margin-left (ml) so content isn't hidden behind sidebar */}
+        <main className="flex-1 md:ml-48 lg:ml-64 p-6 bg-gray-50 min-h-[calc(100vh-53px)]">
+            <div className="max-w-5xl mx-auto">
+                <div className="flex justify-between items-center mb-6">
+                    <h1 className="text-2xl font-bold text-gray-800">Top Questions</h1>
+                    <Link 
+                        href="/ask"
+                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition text-sm font-medium"
                     >
-                      {question.questiontitle}
+                        Ask Question
                     </Link>
-                    <p className="text-gray-700 text-sm mb-3 line-clamp-2">
-                      {question.questionbody}
-                    </p>
-
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                      <div className="flex flex-wrap gap-1">
-                        {question.questiontags?.map((tag: string, idx: number) => (
-                          <Badge
-                            key={idx}
-                            variant="secondary"
-                            className="text-xs bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-
-                      <div className="flex items-center text-xs text-gray-600 flex-shrink-0">
-                        <Link
-                          href={`/users/${question.userid}`}
-                          className="flex items-center"
-                        >
-                          <Avatar className="w-4 h-4 mr-1">
-                            <AvatarFallback className="text-xs">
-                              {question.userposted?.[0] || "U"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-blue-600 hover:text-blue-800 mr-1">
-                            {question.userposted}
-                          </span>
-                        </Link>
-                        <span>
-                          asked {new Date(question.askedon).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </main>
-    </Mainlayout>
+
+                {loading ? (
+                    <p className="text-gray-500">Loading questions...</p>
+                ) : questionsList.length === 0 ? (
+                    <p className="text-gray-500">No questions found.</p>
+                ) : (
+                    <div className="space-y-4">
+                        {questionsList.map((q) => (
+                            <div key={q._id} className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition">
+                                <div className="flex gap-6">
+                                    {/* Stats Side */}
+                                    <div className="flex flex-col gap-2 text-right text-xs text-gray-600 w-[80px] shrink-0">
+                                        <div><span className="font-bold text-gray-800">{q.upVote?.length - q.downVote?.length || 0}</span> votes</div>
+                                        <div className={`border px-1 py-0.5 rounded text-center ${q.noOfAnswers > 0 ? 'border-green-500 text-green-600 bg-green-50' : ''}`}>
+                                            <span className="font-bold">{q.noOfAnswers}</span> answers
+                                        </div>
+                                    </div>
+
+                                    {/* Content Side */}
+                                    <div className="flex-1">
+                                        <Link href={`/questions/${q._id}`}>
+                                            <h3 className="text-blue-700 font-medium hover:text-blue-500 text-lg mb-2 cursor-pointer">
+                                                {q.questionTitle || q.questiontitle}
+                                            </h3>
+                                        </Link>
+                                        
+                                        <div className="flex flex-wrap gap-2 mb-3">
+                                            {(q.questionTags || q.questiontags || []).map((tag: string) => (
+                                                <span key={tag} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+
+                                        <div className="flex justify-end items-center text-xs text-gray-500">
+                                            <span className="mr-1">asked {new Date(q.askedOn).toLocaleDateString()} by</span>
+                                            <span className="text-blue-600 font-medium">{q.userPosted}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </main>
+      </div>
+    </div>
   );
-}
+};
+
+export default Home;
