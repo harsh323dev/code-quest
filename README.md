@@ -1,6 +1,11 @@
 <div align="center">
   <h1>🚀 CodeQuest</h1>
   <p><strong>A Full-Stack Collaborative Q&A Platform with Gamification & Social Features</strong></p>
+
+  <p>
+    <a href="https://codequest-harsh.vercel.app" target="_blank"><b>🔗 Live Demo (Vercel)</b></a> •
+    <a href="https://codequest-harsh.onrender.com" target="_blank"><b>🌐 Backend API (Render)</b></a>
+  </p>
   
   <p>
     <a href="https://nextjs.org/">
@@ -25,18 +30,27 @@
 
 ## 🎯 Overview
 
-**CodeQuest** is a feature-rich clone of Stack Overflow built using the MERN stack (Next.js). Beyond standard Q&A functionality, it introduces advanced features like a social "Public Space" with friend-based posting limits, a tiered subscription model with mock payments, a gamified rewards system, and robust security protocols including login tracking and multi-language OTP verification.
+**CodeQuest** is a feature-rich Stack Overflow–style platform built using the MERN stack (Next.js on the frontend, Node/Express on the backend). It goes beyond standard Q&A by adding:
 
-- **Frontend:** Next.js (TypeScript)
-- **Backend:** Node.js & Express
-- **Database:** MongoDB Atlas
+- A social **Public Space** with friend-based posting limits  
+- A **subscription system** with time-gated mock payments  
+- A gamified **reward system** and point transfers  
+- **Multi-language** support with OTP security  
+- **Login/device tracking** and time-based access rules  
+
+Deployed on:
+
+- **Frontend:** Vercel – https://codequest-harsh.vercel.app  
+- **Backend:** Render – https://codequest-harsh.onrender.com  
 
 ---
 
 ## 📸 Screenshots
 
+_All screenshots are stored in the `/screenshots` folder in the repo._
+
 ### Home & Questions Feed
-![Home Feed](./screenshots/home.png)
+![Home Page](./screenshots/home-page.png)
 
 ### Public Space (Social Feed)
 ![Public Space](./screenshots/public-space.png)
@@ -45,66 +59,87 @@
 ![Subscription](./screenshots/subscription.png)
 
 ### User Rewards & Wallet
-![Wallet](./screenshots/wallet.png)
+![Points & Wallet](./screenshots/points-wallet.png)
+
+### Language Switch & OTP Flow
+![Language Switch](./screenshots/language-switch.png)  
+![OTP Trigger](./screenshots/otp-trigger.png)
+
+### Login Verification & History
+![Login Verification](./screenshots/login-verification.png)
+
+### Reset Password
+![Reset Password](./screenshots/reset-password.png)
+
+### Render Console Logs (OTP)
+![Render Console](./screenshots/render-console.png)  
+![Render Console OTP](./screenshots/render-console-otp.png)
 
 ---
 
 ## ✨ Key Features
 
-### ❓ **Core Q&A Engine**
-- Post questions, write answers, and comment.
-- **Voting System:** Upvote/Downvote questions and answers.
-- Search functionality and tag-based filtering.
+### ❓ Core Q&A Engine
+- Post questions, answers, and comments.
+- Upvote/downvote questions and answers.
+- Tag-based filtering and search.
 
-### 🌐 **Public Space (Social Hub)**
-- Users can post status updates/media.
-- **Friend-Based Limits:** - 0 Friends: Posting locked.
-  - 1 Friend: 1 Post/day.
-  - 2 Friends: 2 Posts/day.
-  - 10+ Friends: Unlimited posting.
-- Connect with other users via the "Find Friends" sidebar.
+### 🌐 Public Space (Social Hub)
+- Users share posts with images/videos, like, comment, and share.
+- **Friend-based posting limits:**
+  - 0 friends → cannot post.
+  - 1 friend → 1 post/day.
+  - 2 friends → 2 posts/day.
+  - ≥10 friends → unlimited posts/day.
 
-### 💳 **Subscription System (Mock Payment)**
-- **Plans:** Free (1 Q/day), Bronze (5 Q/day), Silver (10 Q/day), Gold (Unlimited).
-- **Time-Gated Payment:** Gateway opens only **10:00 AM - 11:00 AM IST**.
-- Simulates Invoice generation and email notifications upon upgrade.
+### 💳 Subscription System (Mock Payment)
+- Plans:
+  - **Free:** 1 question/day.
+  - **Bronze:** ₹100/month – 5 questions/day.
+  - **Silver:** ₹300/month – 10 questions/day.
+  - **Gold:** ₹1000/month – unlimited questions/day.
+- Payment allowed only between **10:00 AM – 11:00 AM IST**.
+- After payment, invoice/plan details are sent to the user via email (mocked in logs / mailer).
 
-### 🏆 **Gamification & Rewards**
-- **Earn Points:** +5 points per answer, +5 bonus for upvotes.
-- **Penalty:** -5 points for deleting answers.
-- **Point Transfer:** Users can transfer points to peers (Sender must have >10 points).
+### 🏆 Gamification & Rewards
+- +5 points for each answer.
+- +5 bonus points when an answer reaches 5 upvotes.
+- Points reduced when an answer is removed or downvoted.
+- Users can **transfer points** to others if they have more than 10 points.
 
-### 🔒 **Advanced Security**
-- **Login Tracking:** Captures IP, OS, and Browser type.
-- **Mobile Restriction:** Mobile devices can only access the app between **10:00 AM - 1:00 PM**.
-- **Forgot Password:** Secure reset flow restricted to **1 request per day**.
+### 🔒 Advanced Security & Login Rules
+- Track login IP, browser, OS, and device type.
+- Show login history in the user profile.
+- If user logs in via **Chrome**, access can require OTP.
+- If user logs in via **Microsoft Edge**, allow direct access without extra OTP.
+- If the device is **mobile**, restrict access to **10:00 AM – 1:00 PM IST** only.
 
-### 🌍 **Multi-Language Support**
-- Supports: English, French, Spanish, Hindi, Portuguese, Chinese.
-- **Security Check:** - Switching to French triggers **Email OTP**.
-  - Switching to other languages triggers **Mobile OTP**.
+### 🌍 Multi-Language Support
+- Supported languages: **English, French, Spanish, Hindi, Portuguese, Chinese**.
+- Switching to **French** triggers **email OTP verification**.
+- Switching to any other language triggers **mobile OTP verification**.
+- The entire UI (navigation, labels, major screens) updates to the selected language.
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technologies |
-|-------|-------------|
-| **Frontend** | Next.js, TypeScript, Tailwind CSS, Axios, Context API |
-| **Backend** | Node.js, Express.js, Mongoose, JWT |
-| **Database** | MongoDB Atlas |
-| **Localization** | i18next, react-i18next |
-| **Tools** | Nodemon, Dotenv, Bcrypt, Moment.js |
+| Layer       | Technologies                                                                  |
+|-------------|-------------------------------------------------------------------------------|
+| Frontend    | Next.js, TypeScript, Tailwind CSS, Axios, Context API                         |
+| Backend     | Node.js, Express.js, Mongoose, JWT, Bcrypt, Nodemailer                        |
+| Database    | MongoDB Atlas                                                                 |
+| i18n        | i18next, react-i18next                                                        |
+| Deployment  | **Vercel** (frontend), **Render** (backend)                                   |
+| Utilities   | Nodemon, Dotenv                                                               |
 
 ---
 
 ## 📋 Prerequisites
 
-Before running this project, ensure you have the following installed:
-
-- **Node.js** v16.0 or higher
-- **npm** or **yarn**
-- **MongoDB Atlas** connection string
+- **Node.js** v16 or higher  
+- **npm** or **yarn**  
+- **MongoDB Atlas** connection string  
 
 ---
 
@@ -112,92 +147,96 @@ Before running this project, ensure you have the following installed:
 
 ### 1️⃣ Clone the Repository
 
-```bash
+git clone https://github.com/harsh323dev/code-quest.git
 
-git clone [https://github.com/yourusername/codequest.git](https://github.com/yourusername/codequest.git)
-cd codequest
+cd code-quest
 
-2️⃣ Backend Setup
-Navigate to the server folder and install dependencies:
+
+### 2️⃣ Backend Setup
 
 cd server
+
 npm install
 
-Create a .env file in the server/ directory:
+
+Create a `.env` file in `server/`:
 
 PORT=5000
-CONNECTION_URL=your_mongodb_connection_string
+MONGODB_URL=your_mongodb_connection_string
 JWT_SECRET=your_secret_key
+NODE_ENV=development
+
 
 Start the backend server:
 
-npm start
 
-Backend runs at: http://localhost:5000
+Backend runs at: `http://localhost:5000`
 
-3️⃣ Frontend Setup
-Open a new terminal, navigate to the frontend folder (stack), and install dependencies:
+### 3️⃣ Frontend Setup
 
-cd stack
+cd ../stack
 npm install
 
-Create a .env file in the stack/ directory:
+
+Create a `.env.local` in `stack/`:
 
 NEXT_PUBLIC_BACKEND_URL=http://localhost:5000
 
-Start the frontend application:
+
+Start the frontend:
 
 npm run dev
 
-Frontend runs at: http://localhost:3000
 
-📁 Project Structure
+Frontend runs at: `http://localhost:3000`
 
-codequest/
-├── server/                  # Backend Logic
-│   ├── controllers/         # Auth, Question, Answer, Payment Logic
-│   ├── models/              # Mongoose Schemas (User, Question, Post)
-│   ├── routes/              # API Routes
-│   ├── middleware/          # Auth & Security Middleware
-│   └── index.js             # Entry Point
+---
+
+## 📁 Project Structure
+
+code-quest/
+├── server/ # Backend Logic (Node/Express)
+│ ├── controllers/ # Auth, Question, Answer, Payment, Reward, OTP
+│ ├── models/ # Mongoose Schemas (User, Question, Post, LoginHistory)
+│ ├── routes/ # API Routes
+│ ├── middleware/ # Auth & Security Middleware
+│ ├── seed.js # Seed script for demo questions
+│ └── index.js # Entry Point
 │
-├── stack/                   # Frontend (Next.js)
-│   ├── public/              # Assets & Locales (i18n)
-│   ├── src/
-│   │   ├── components/      # UI Components (Navbar, Sidebar)
-│   │   ├── pages/           # Routes (Auth, Questions, Subscription)
-│   │   ├── lib/             # API Services & Context
-│   │   └── styles/          # Global CSS
-│   └── package.json
+├── stack/ # Frontend (Next.js)
+│ ├── public/ # Assets & Locales (i18n)
+│ ├── screenshots/ # Project screenshots for README
+│ ├── src/
+│ │ ├── components/ # UI Components (Navbar, Sidebar, Cards)
+│ │ ├── pages/ # Routes (Auth, Questions, Public Space, Subscription)
+│ │ ├── lib/ # Axios instance, Contexts, Hooks
+│ │ └── styles/ # Global styles
+│ └── package.json
+│
 └── README.md
 
 
+---
 
-🌐 API Reference
-POST /payment/subscribe
-Upgrades user plan. Restricted to 10-11 AM IST.
+## 🌐 API Highlights
 
-POST /posts/create
-Creates a social post. Rate limited based on friend count.
+- `POST /payment/subscribe` – Upgrade user plan (time-restricted 10–11 AM IST).  
+- `POST /posts/create` – Create Public Space post with friend-based rate limits.  
+- `POST /user/transfer-points` – Transfer reward points between users.  
+- `POST /user/otp/generate` – Generate OTP for language switching / login flows.  
+- `GET /login/history` – Fetch login history with browser/OS/device/IP details.  
 
-POST /user/transfer-points
-Transfers reward points between users.
-
-POST /user/otp/generate
-Generates OTP for language switching security.
+---
 
 ## 👨‍💻 Author
 
 **Harsh Agarwal**
 
-- 🐙 GitHub: https://github.com/Harsh427744
-- 💼 LinkedIn: https://linkedin.com/in/harsh323
+- 🐙 GitHub: https://github.com/Harsh427744  
+- 💼 LinkedIn: https://linkedin.com/in/harsh323  
 
 ---
 
 ⭐ If you found this project interesting, consider giving it a star!
 
-Built with ❤️ by Harsh Agarwal
-
-
-
+_Built with ❤️ by Harsh Agarwal_
