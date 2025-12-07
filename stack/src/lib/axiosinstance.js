@@ -10,9 +10,12 @@ const axiosInstance = axios.create({
 // Add token to requests automatically
 axiosInstance.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (user?.token) {
-      config.headers.Authorization = `Bearer ${user.token}`;
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      const user = JSON.parse(stored);
+      if (user?.token) {
+        config.headers.Authorization = `Bearer ${user.token}`;
+      }
     }
   }
   return config;
