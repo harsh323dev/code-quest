@@ -30,6 +30,7 @@ export default function SignUpPage() {
     password: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.id]: e.target.value });
@@ -40,6 +41,11 @@ export default function SignUpPage() {
 
     if (!form.name || !form.email || !form.password) {
       toast.error("All fields are required");
+      return;
+    }
+
+    if (!agreedToTerms) {
+      toast.error("Please agree to Terms of Service and Privacy Policy");
       return;
     }
 
@@ -190,7 +196,13 @@ export default function SignUpPage() {
               </div>
 
               <div className="flex items-start space-x-2">
-                <Checkbox id="terms" className="mt-1" disabled={isSubmitting} />
+                <Checkbox 
+                  id="terms" 
+                  className="mt-1" 
+                  disabled={isSubmitting}
+                  checked={agreedToTerms}
+                  onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
+                />
                 <Label htmlFor="terms" className="text-sm leading-relaxed">
                   I agree to the{" "}
                   <Link href="#" className="text-blue-600 hover:underline">
