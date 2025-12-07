@@ -12,7 +12,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/lib/AuthContext";
 import { useState } from "react";
-import { useRouter } from "next/navigation"; // Fixed: use next/navigation for App Router
+import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
 interface FormData {
@@ -24,26 +24,36 @@ interface FormData {
 export default function SignUpPage() {
   const router = useRouter();
   const { Signup } = useAuth();
-  const [form, setForm] = useState<FormData>({ name: "", email: "", password: "" });
-  const [isSubmitting, setIsSubmitting] = useState(false); // Local loading state
-  
+  const [form, setForm] = useState<FormData>({
+    name: "",
+    email: "",
+    password: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.id]: e.target.value });
   };
-  
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (!form.name || !form.email || !form.password) {
       toast.error("All fields are required");
       return;
     }
+
     setIsSubmitting(true);
     try {
       await Signup(form);
       router.push("/");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Signup error:", error);
-      toast.error("Signup failed. Please try again.");
+      const msg =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Signup failed. Please try again.";
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -56,7 +66,7 @@ export default function SignUpPage() {
           <Link href="/" className="flex items-center justify-center mb-4">
             <div className="w-6 h-6 lg:w-8 lg:h-8 bg-orange-500 rounded mr-2 flex items-center justify-center">
               <div className="w-4 h-4 lg:w-6 lg:h-6 bg-white rounded-sm flex items-center justify-center">
-                <div className="w-3 h-3 lg:w-4 lg:h-4 bg-orange-500 rounded-sm"></div>
+                <div className="w-3 h-3 lg:w-4 lg:h-4 bg-orange-500 rounded-sm" />
               </div>
             </div>
             <span className="text-lg lg:text-xl font-bold text-gray-800">
@@ -64,6 +74,7 @@ export default function SignUpPage() {
             </span>
           </Link>
         </div>
+
         <form onSubmit={handleSubmit}>
           <Card>
             <CardHeader className="space-y-1 text-center">
@@ -74,6 +85,7 @@ export default function SignUpPage() {
                 Join the Stack Overflow community
               </CardDescription>
             </CardHeader>
+
             <CardContent className="space-y-4">
               <Button
                 type="button"
@@ -145,6 +157,7 @@ export default function SignUpPage() {
                   disabled={isSubmitting}
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm">
                   Email
@@ -158,6 +171,7 @@ export default function SignUpPage() {
                   disabled={isSubmitting}
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm">
                   Password
