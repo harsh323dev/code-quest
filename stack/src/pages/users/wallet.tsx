@@ -3,7 +3,8 @@ import { useAuth } from "../../lib/AuthContext";
 import { transferPoints } from "../../lib/api";
 import { toast } from "react-toastify";
 import Sidebar from "../../components/Sidebar"; 
-import Navbar from "C://Users//admin//Desktop//Work//My Projects//stackoverflow-clone-main//stack//src//components//Navbar";     
+import Navbar from "../../components/Navbar";
+     
 
 
 const PointsWallet = () => {
