@@ -13,11 +13,11 @@ dotenv.config();
 
 const app = express();
 
-// ✅ PRODUCTION CORS - Update after Vercel deployment
+// ✅ PRODUCTION CORS with Vercel URL
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://your-app.vercel.app', // ⚠️ REPLACE with your actual Vercel URL
-  process.env.FRONTEND_URL // Optional: add env variable
+  'https://codequest-harsh-q062zbnz-harsh427744s-projects.vercel.app',
+  process.env.FRONTEND_URL
 ];
 
 app.use(cors({
@@ -25,11 +25,17 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps, Postman)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'CORS policy does not allow access from this origin.';
-      return callback(new Error(msg), false);
+    // Allow Vercel preview deployments (any subdomain)
+    if (origin && origin.includes('.vercel.app')) {
+      return callback(null, true);
     }
-    return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    
+    const msg = 'CORS policy does not allow access from this origin.';
+    return callback(new Error(msg), false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
