@@ -32,7 +32,6 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       const msg = error.response?.data.message || "Signup failed";
       seterror(msg);
-      toast.error(msg);
       throw error;
     } finally {
       setloading(false);
@@ -43,37 +42,23 @@ export const AuthProvider = ({ children }) => {
     setloading(true);
     seterror(null);
     try {
-      console.log("🔍 Attempting login to:", "/user/login");
-      console.log("📧 Email:", email);
-      
       const res = await axiosInstance.post("/user/login", { email, password });
-      
-      console.log("✅ Login response status:", res.status);
-      console.log("📦 Response data:", res.data);
 
-      // Handle OTP Case (Status 202)
       if (res.status === 202) {
         setloading(false);
-        console.log("🔒 Chrome detected - OTP required");
         return { requiresOTP: true, email: res.data.email }; 
       }
 
-      // ✅ Standard Success Case
       const { data, token } = res.data;
       const userWithToken = { ...data, token };
       
       localStorage.setItem("user", JSON.stringify(userWithToken));
       setUser(userWithToken);
       
-      console.log("✅ User set in context:", userWithToken);
       toast.success("Login Successful");
       return { success: true };
 
     } catch (error) {
-      console.error("❌ Login error:", error);
-      console.error("❌ Error response:", error.response);
-      console.error("❌ Request config:", error.config);
-      
       const msg = error.response?.data?.message || "Login failed";
       seterror(msg);
       toast.error(msg);
